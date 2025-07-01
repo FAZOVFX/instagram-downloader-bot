@@ -6,7 +6,7 @@ import instaloader
 import os
 
 # /start buyrug'i uchun xush kelibsiz xabari
-aasync def handle_start(event):
+async def handle_start(event):
     bot = await event.client.get_me()
     tugmalar = [
         [Button.inline("📚 Yordam", b"help"), Button.inline("ℹ️ Bot haqida", b"about")]
@@ -17,7 +17,7 @@ aasync def handle_start(event):
     )
 
 # /help buyrug'i uchun yordam xabari
-aasync def handle_help(event):
+async def handle_help(event):
     matn = """🛠 **Foydalanish bo'yicha qo'llanma** 🛠\n\n1. Instagram post havolasini yuboring\n2. Profil rasmi uchun: `/dp username`\n3. Yopiq postlar uchun /auth kerak"""
 
     if Config.has_insta_creds:
@@ -29,14 +29,14 @@ aasync def handle_help(event):
     )
 
 # /about buyrug'i uchun bot haqida ma'lumot
-aasync def handle_about(event):
+async def handle_about(event):
     await event.edit(
         """🌐 **Bot haqida**\n\n• Instagram postlarini yuklaydi\n• Yopiq postlar uchun login imkoniyati\n• Hech qanday ma'lumot saqlanmaydi""",
         buttons=Button.inline("🔙 Orqaga", b"home")
     )
 
 # /auth buyrug'i uchun foydalanuvchi login jarayoni
-aasync def handle_auth(event):
+async def handle_auth(event):
     async with event.client.conversation(event.chat_id) as conv:
         await conv.send_message("""🔐 **Instagramga kirish**\n\n⚠️ Faqat yopiq postlar uchun kerak\n⚠️ Ikkinchi akkaunt tavsiya qilinadi\n\nDavom etish uchun `yes` deb yozing, bekor qilish uchun `no` deb yozing""")
 
@@ -59,14 +59,14 @@ aasync def handle_auth(event):
             await conv.send_message("❌ Kirishda xatolik. Ma'lumotlarni tekshiring")
 
 # /unauth buyrug'i uchun chiqish
-aasync def handle_unauth(event):
+async def handle_unauth(event):
     if db.delete_user_credentials(event.sender_id):
         await event.reply("🔓 Kirish ma'lumotlari olib tashlandi")
     else:
         await event.reply("ℹ️ Saqlangan ma'lumot topilmadi")
 
 # /dp buyrug'i uchun profil rasmini yuklash
-aasync def handle_profile_pic(event):
+async def handle_profile_pic(event):
     args = event.pattern_match.group(1).split()
     if len(args) < 1:
         return await event.reply("❌ Format: /dp username")
@@ -89,7 +89,7 @@ aasync def handle_profile_pic(event):
         await event.reply("❌ Yuklab olishda xatolik yuz berdi")
 
 # Instagram post havolasi yuborilganda uni yuklash
-aasync def handle_download(event):
+async def handle_download(event):
     post_id = extract_post_id(event.text)
     if not post_id:
         return
@@ -126,7 +126,7 @@ aasync def handle_download(event):
         await cleanup(f"-{post_id}")
 
 # Inline tugmalarga ishlovchi funksiyalar
-aasync def handle_callback(event):
+async def handle_callback(event):
     data = event.data.decode()
     if data == "home":
         await handle_start(event)
