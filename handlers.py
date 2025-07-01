@@ -4,6 +4,7 @@ from database import db
 from utils import extract_post_id, download_post, cleanup
 import instaloader
 import os
+import asyncio
 
 # /start buyrug'i uchun xush kelibsiz xabari
 async def handle_start(event):
@@ -23,17 +24,23 @@ async def handle_help(event):
     if Config.has_insta_creds:
         matn += "\n\n🔑 Umumiy login mavjud"
 
-    await event.edit(
-        matn,
-        buttons=Button.inline("🔙 Orqaga", b"home")
-    )
+    try:
+        await event.edit(
+            matn,
+            buttons=Button.inline("🔙 Orqaga", b"home")
+        )
+    except:
+        pass
 
 # /about buyrug'i uchun bot haqida ma'lumot
 async def handle_about(event):
-    await event.edit(
-        """🌐 **Bot haqida**\n\n• Instagram postlarini yuklaydi\n• Yopiq postlar uchun login imkoniyati\n• Hech qanday ma'lumot saqlanmaydi""",
-        buttons=Button.inline("🔙 Orqaga", b"home")
-    )
+    try:
+        await event.edit(
+            """🌐 **Bot haqida**\n\n• Instagram postlarini yuklaydi\n• Yopiq postlar uchun login imkoniyati\n• Hech qanday ma'lumot saqlanmaydi""",
+            buttons=Button.inline("🔙 Orqaga", b"home")
+        )
+    except:
+        pass
 
 # /auth buyrug'i uchun foydalanuvchi login jarayoni
 async def handle_auth(event):
@@ -110,16 +117,24 @@ async def handle_download(event):
 
         caption = f"{caption}" if caption else "via @"
 
-        if len(media) == 1:
-            await event.client.send_file(event.chat_id, media[0], caption=caption)
-        else:
-            await event.client.send_file(
-                event.chat_id,
-                media,
-                caption=caption if len(media) > 1 else None
-            )
+        for m in media:
+            if os.path.getsize(m) > 50 * 1024 * 1024:
+                await event.client.send_message(
+                    event.chat_id,
+                    f"⚠️ Fayl {os.path.basename(m)} 50MB dan katta, yuborilmadi."
+                )
+                continue
+            try:
+                await event.client.send_file(event.chat_id, m, caption=caption)
+                await asyncio.sleep(1)
+            except Exception as e:
+                await event.client.send_message(
+                    event.chat_id,
+                    f"❌ Xatolik ({os.path.basename(m)}): {str(e)}"
+                )
 
         await status.delete()
+
     except Exception as e:
         await status.edit(f"❌ Xatolik: {str(e)}")
     finally:
